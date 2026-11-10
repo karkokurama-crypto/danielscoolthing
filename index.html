@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#073b5c">
+  <title>Fish Clicker — Catch some fish!</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+      background: #062c48;
+      color: #f2fbff;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      --aqua: #6de8dc;
+      --deep: #073b5c;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 110%, #1685a0 0, transparent 55%),
+        linear-gradient(180deg, #07324f 0%, #075574 55%, #08768b 100%);
+    }
+
+    .ocean { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+    .sunlight {
+      position: absolute;
+      top: -35%; left: 50%; width: 110vw; height: 100vh;
+      transform: translateX(-50%);
+      background: repeating-conic-gradient(from 180deg at 50% 0%, transparent 0deg 12deg, #a4f6e90a 13deg 17deg, transparent 18deg 30deg);
+      filter: blur(14px);
+    }
+    .bubble {
+      position: absolute;
+      bottom: -50px;
+      width: var(--size); height: var(--size);
+      left: var(--left);
+      border: 1px solid #d5ffff70;
+      border-radius: 50%;
+      background: #d5ffff12;
+      animation: rise var(--duration) linear infinite;
+      animation-delay: var(--delay);
+    }
+    @keyframes rise { to { transform: translateY(-115vh) translateX(24px); opacity: 0; } }
+
+    main {
+      position: relative;
+      width: min(100% - 32px, 480px);
+      padding: 38px 28px 30px;
+      text-align: center;
+      border: 1px solid #c0ffff32;
+      border-radius: 30px;
+      background: linear-gradient(145deg, #ffffff15, #ffffff08);
+      box-shadow: 0 24px 80px #001c3480, inset 0 1px #ffffff20;
+      backdrop-filter: blur(14px);
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #a5e8e7;
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(2rem, 8vw, 2.8rem); letter-spacing: -.06em; }
+    .subtitle { margin: 9px 0 22px; color: #c2e6ef; }
+    .counter-label { color: #a5e8e7; font-size: .82rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .count {
+      display: block;
+      margin: 2px 0 10px;
+      color: #fff;
+      font-size: clamp(3.6rem, 17vw, 5.2rem);
+      font-weight: 850;
+      line-height: 1.05;
+      letter-spacing: -.07em;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 5px 25px #67e9df40;
+    }
+    .fish-button {
+      display: grid;
+      place-items: center;
+      width: 205px; height: 205px;
+      margin: 15px auto 16px;
+      border: 1px solid #ffffff65;
+      border-radius: 50%;
+      color: inherit;
+      cursor: pointer;
+      background: radial-gradient(circle at 35% 25%, #d2fff5 0, #72e8d8 22%, #24aeb4 62%, #087b9b 100%);
+      box-shadow: 0 13px 0 #07556f, 0 24px 35px #001d3460, inset 0 5px 14px #ffffff70;
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .fish-button:hover { filter: brightness(1.08); transform: translateY(-3px); box-shadow: 0 16px 0 #07556f, 0 28px 38px #001d3465, inset 0 5px 14px #ffffff70; }
+    .fish-button:active, .fish-button.bump { transform: translateY(7px) scale(.97); box-shadow: 0 5px 0 #07556f, 0 13px 25px #001d3460, inset 0 5px 14px #ffffff70; }
+    .fish-button:focus-visible, .reset:focus-visible { outline: 3px solid #fff; outline-offset: 5px; }
+    .fish-emoji { font-size: 7.3rem; line-height: 1; filter: drop-shadow(0 7px 4px #00556b48); user-select: none; }
+    .hint { margin: 0; color: #d5f3f5; font-size: .94rem; }
+    .hint strong { color: #fff; }
+    .footer { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 21px; color: #a8d7df; font-size: .78rem; }
+    .reset {
+      padding: 5px 9px;
+      border: 1px solid #ffffff38;
+      border-radius: 999px;
+      color: #c9e8ea;
+      font: inherit;
+      cursor: pointer;
+      background: #ffffff0b;
+    }
+    .reset:hover { color: #fff; background: #ffffff1b; }
+    .pop {
+      position: fixed;
+      z-index: 2;
+      color: #d8fff5;
+      font-size: 1.3rem;
+      font-weight: 900;
+      pointer-events: none;
+      animation: pop .75s ease-out forwards;
+      text-shadow: 0 2px 8px #00394b;
+    }
+    @keyframes pop { from { opacity: 1; transform: translate(-50%, 0) scale(.75); } to { opacity: 0; transform: translate(-50%, -75px) scale(1.15); } }
+    @media (max-height: 650px) {
+      main { padding: 24px 24px 20px; }
+      .subtitle { margin-bottom: 12px; }
+      .fish-button { width: 165px; height: 165px; margin: 8px auto 12px; }
+      .fish-emoji { font-size: 6rem; }
+      .footer { margin-top: 13px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ocean" aria-hidden="true">
+    <div class="sunlight"></div>
+    <i class="bubble" style="--size:12px;--left:12%;--duration:11s;--delay:-2s"></i>
+    <i class="bubble" style="--size:8px;--left:25%;--duration:14s;--delay:-8s"></i>
+    <i class="bubble" style="--size:17px;--left:72%;--duration:12s;--delay:-5s"></i>
+    <i class="bubble" style="--size:10px;--left:88%;--duration:16s;--delay:-11s"></i>
+    <i class="bubble" style="--size:6px;--left:54%;--duration:13s;--delay:-7s"></i>
+  </div>
+  <main>
+    <p class="eyebrow">A tiny ocean adventure</p>
+    <h1>Fish Clicker</h1>
+    <p class="subtitle">One click, one more fish. Easy as fish!</p>
+    <div class="counter-label">Your fish</div>
+    <output class="count" id="count" aria-live="polite" aria-atomic="true">0</output>
+    <button class="fish-button" id="catch-fish" type="button" aria-label="Catch one fish">
+      <span class="fish-emoji" aria-hidden="true">🐠</span>
+    </button>
+    <p class="hint">Tap the fish to catch <strong>+1 fish</strong></p>
+    <div class="footer">
+      <span>Your catch is saved on this device</span>
+      <button class="reset" id="reset" type="button">Start over</button>
+    </div>
+  </main>
+  <script>
+    const countDisplay = document.querySelector('#count');
+    const fishButton = document.querySelector('#catch-fish');
+    const resetButton = document.querySelector('#reset');
+    const storageKey = 'fish-clicker-count';
+    let fish = 0;
+
+    try {
+      const saved = Number.parseInt(localStorage.getItem(storageKey), 10);
+      if (Number.isSafeInteger(saved) && saved > 0) fish = saved;
+    } catch { /* The game still works if browser storage is unavailable. */ }
+
+    function updateCount() {
+      countDisplay.value = fish.toLocaleString();
+      countDisplay.textContent = fish.toLocaleString();
+      try { localStorage.setItem(storageKey, String(fish)); } catch { /* Saving is optional. */ }
+    }
+
+    fishButton.addEventListener('click', () => {
+      if (fish < Number.MAX_SAFE_INTEGER) fish += 1;
+      updateCount();
+      fishButton.classList.remove('bump');
+      void fishButton.offsetWidth;
+      fishButton.classList.add('bump');
+      const pop = document.createElement('span');
+      pop.className = 'pop';
+      pop.textContent = '+1 🐟';
+      pop.setAttribute('aria-hidden', 'true');
+      pop.style.left = `${Math.min(window.innerWidth - 35, Math.max(35, window.innerWidth / 2 + (Math.random() - .5) * 125))}px`;
+      pop.style.top = `${Math.max(30, window.innerHeight / 2 - 95)}px`;
+      document.body.append(pop);
+      pop.addEventListener('animationend', () => pop.remove(), { once: true });
+    });
+
+    resetButton.addEventListener('click', () => {
+      if (fish === 0 || window.confirm('Send all your fish back to the ocean?')) {
+        fish = 0;
+        updateCount();
+      }
+    });
+
+    updateCount();
+  </script>
+</body>
+</html>
