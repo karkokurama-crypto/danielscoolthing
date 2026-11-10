@@ -157,7 +157,7 @@
     <button class="fish-button" id="catch-fish" type="button" aria-label="Catch one fish">
       <span class="fish-emoji" aria-hidden="true">🐠</span>
     </button>
-    <p class="hint">Tap the fish to catch <strong>+1 fish</strong></p>
+    <p class="hint">Tap the fish for <strong>+1</strong>, or type <strong>FISH</strong> for <strong>+100,000,000</strong>!</p>
     <div class="footer">
       <span>Your catch is saved on this device</span>
       <button class="reset" id="reset" type="button">Start over</button>
@@ -168,6 +168,9 @@
     const fishButton = document.querySelector('#catch-fish');
     const resetButton = document.querySelector('#reset');
     const storageKey = 'fish-clicker-count';
+    const cheatCode = 'fish';
+    const cheatReward = 100_000_000;
+    let typedLetters = '';
     let fish = 0;
 
     try {
@@ -181,20 +184,39 @@
       try { localStorage.setItem(storageKey, String(fish)); } catch { /* Saving is optional. */ }
     }
 
+    function showPop(text) {
+      const pop = document.createElement('span');
+      pop.className = 'pop';
+      pop.textContent = text;
+      pop.setAttribute('aria-hidden', 'true');
+      pop.style.left = `${Math.min(window.innerWidth - 35, Math.max(35, window.innerWidth / 2 + (Math.random() - .5) * 125))}px`;
+      pop.style.top = `${Math.max(30, window.innerHeight / 2 - 95)}px`;
+      document.body.append(pop);
+      pop.addEventListener('animationend', () => pop.remove(), { once: true });
+    }
+
     fishButton.addEventListener('click', () => {
       if (fish < Number.MAX_SAFE_INTEGER) fish += 1;
       updateCount();
       fishButton.classList.remove('bump');
       void fishButton.offsetWidth;
       fishButton.classList.add('bump');
-      const pop = document.createElement('span');
-      pop.className = 'pop';
-      pop.textContent = '+1 🐟';
-      pop.setAttribute('aria-hidden', 'true');
-      pop.style.left = `${Math.min(window.innerWidth - 35, Math.max(35, window.innerWidth / 2 + (Math.random() - .5) * 125))}px`;
-      pop.style.top = `${Math.max(30, window.innerHeight / 2 - 95)}px`;
-      document.body.append(pop);
-      pop.addEventListener('animationend', () => pop.remove(), { once: true });
+      showPop('+1 🐟');
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (!/^[a-z]$/i.test(event.key)) {
+        typedLetters = '';
+        return;
+      }
+
+      typedLetters = (typedLetters + event.key.toLowerCase()).slice(-cheatCode.length);
+      if (typedLetters === cheatCode) {
+        fish = Math.min(Number.MAX_SAFE_INTEGER, fish + cheatReward);
+        updateCount();
+        showPop('+100,000,000 🐟');
+        typedLetters = '';
+      }
     });
 
     resetButton.addEventListener('click', () => {
